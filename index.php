@@ -1,1 +1,0 @@
-<?php header( 'Location: /Instructions/StarterCode/Belly_Button_Biodiversity/templates/index.html' ) ;  ?>
