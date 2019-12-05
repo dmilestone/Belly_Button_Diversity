@@ -1,43 +1,34 @@
-async function buildMetadata(sample) {
-
+function buildMetadata(sample) {
   // @TODO: Complete the following function that builds the metadata panel
 
   // Use `d3.json` to fetch the metadata for a sample
-	const metadata = await d3.json(`/metadata/${sample}`);
-
-	// Use d3 to select the panel with id of `#sample-metadata`
-	const sampleMetadata = d3.select("#sample-metadata");
-
-	// Use `.html("") to clear any existing metadata
-	sampleMetadata.html("");
-
-    // Use `Object.entries` to add each key and value pair to the panel
-    // Hint: Inside the loop, you will need to use d3 to append new
-	// tags for each key-value in the metadata.
-	const metaDataEntries = Object.entries(metadata);
-    metaDataEntries.forEach(([key, value]) => {
-		const li = sampleMetadata.append("li");
-		li.text(`${key}: ${value}`);
+    d3.json(`/metadata/${sample}`).then(function(response) {
+  // Use d3 to select the panel with id of `#sample-metadata`
+		var sampleMetadata = d3.select("#sample-metadata");
+  // Use `.html("") to clear any existing metadata
+		sampleMetadata.html("");
+  // Use `Object.entries` to add each key and value pair to the panel
+  // Hint: Inside the loop, you will need to use d3 to append new
+  // tags for each key-value in the metadata.
+		const metaDataEntries = Object.entries(response);
+		metaDataEntries.forEach(([key, value]) => {
+			var ul = sampleMetadata.append("ul");
+			ul.text(`${key}: ${value}`);
 	});
-
-	// metadata.forEach()
-
+ 
     // BONUS: Build the Gauge Chart
     // buildGauge(data.WFREQ);
 }
 
-async function buildCharts(sample) {
-
+function buildCharts(sample) {
   // @TODO: Use `d3.json` to fetch the sample data for the plots
-	const data = await d3.json(`/samples/${sample}`);
-	buildBubbleChart(data);
-
-	buildPieChart(data);
+  d3.json(`/samples/${sample}`).then(function(data){
     // @TODO: Build a Pie Chart
     // HINT: You will need to use slice() to grab the top 10 sample_values,
-	// otu_ids, and labels (10 each).
-	
-
+    // otu_ids, and labels (10 each).
+	buildBubbleChart(data);
+	buildPieChart(data);
+  })
 }
 const buildPieChart = (data) => {
 	const inputData = [{
@@ -46,11 +37,10 @@ const buildPieChart = (data) => {
 		type: 'pie'
 	  }];
 	  
-	const layout = {
+	var layout = {
 	height: 400,
 	width: 500
 	};
-	
 	Plotly.newPlot("pie", inputData, layout);
 }
 
@@ -61,20 +51,18 @@ const buildBubbleChart = (data) => {
 			y: data.sample_values,
 			mode: 'markers',
 			marker: {
-			  size: data.sample_values
+			  size: data.sample_values,
+			  color: data.otu_ids
 			}
-		  };
-		  
-		  
-		const layout = {
+		  };		  
+		var bubbleLayout = {
 			title: "Bubble Chart",
 			showlegend: false,
-			height: 600,
-			width: 600
-		  };
-		  
-		  Plotly.newPlot("bubble", [trace1], layout);
-	
+			height: 800,
+			width: 1200,
+			margin: { t: 0},
+		  };	  
+		  Plotly.newPlot("bubble", [trace1], bubbleLayout);
 } 
 
 function init() {
@@ -89,7 +77,6 @@ function init() {
         .text(sample)
         .property("value", sample);
     });
-
     // Use the first sample from the list to build the initial plots
     const firstSample = sampleNames[0];
     optionChanged(firstSample);
